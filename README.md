@@ -1,6 +1,6 @@
-# Assignment 1 - Block Store
+# Assignment 3 - Block Store
 
 Please refer to the assignment document and direct all question to the Canvas LMS.
 
-Due February 20th 8:59AM
+Due September 21st 3:30 PM
 
