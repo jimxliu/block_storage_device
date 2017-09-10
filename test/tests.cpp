@@ -1,12 +1,11 @@
 /*
-* @Author:              Tyler Nivin
-* @Email:               twn346@mail.missouri.edu
-* @Created Date:        Mon Sep 12, 2016, 10:06:36 PM
-* @Last Modified time:  Sat Sep 17, 2016, 01:08:24 AM
-*
-* @Description:
-*/
-
+ * @Author:              Tyler Nivin
+ * @Email:               twn346@mail.missouri.edu
+ * @Created Date:        Mon Sep 12, 2016, 10:06:36 PM
+ * @Last Modified time:  Sat Sep 17, 2016, 01:08:24 AM
+ *
+ * @Description:
+ */
 #include <gtest/gtest.h>
 #include "../include/block_store.h"
 
@@ -24,20 +23,20 @@ unsigned int score;
 unsigned int total;
 
 class GradeEnvironment : public testing::Environment {
-  public:
-    virtual void SetUp() {
-        score = 0;
+    public:
+        virtual void SetUp() {
+            score = 0;
 #if GRAD_TESTS
-        total = 126;
+            total = 126;
 #else
-        total = 100;
+            total = 100;
 #endif
-    }
-    virtual void TearDown() {
-        ::testing::Test::RecordProperty("points_given", score);
-        ::testing::Test::RecordProperty("points_total", total);
-        std::cout << "SCORE: " << score << '/' << total << std::endl;
-    }
+        }
+        virtual void TearDown() {
+            ::testing::Test::RecordProperty("points_given", score);
+            ::testing::Test::RecordProperty("points_total", total);
+            std::cout << "SCORE: " << score << '/' << total << std::endl;
+        }
 };
 
 int main(int argc, char **argv) {
@@ -85,7 +84,7 @@ TEST(block_store_alloc_free_req, allocate_first) {
     ASSERT_NE(nullptr, bs) << "block_store_create returned NULL when it should not have\n";
     size_t id = 100;
     id = block_store_allocate(bs);
-    ASSERT_EQ(0, id) << "The id returned should be zero; this should be the first allocation.\n";
+    ASSERT_EQ(1, id) << "The id returned should be one; this should be the first allocation.\n";
     block_store_destroy(bs);
     score += 4;
 }
@@ -96,10 +95,10 @@ TEST(block_store_alloc_free_req, allocate_and_free) {
     ASSERT_NE(nullptr, bs) << "block_store_create returned NULL when it should not have\n";
     size_t id = 100;
     id = block_store_allocate(bs);
-    ASSERT_EQ(0, id) << "The id returned should be zero; this should be the first allocation.\n";
+    ASSERT_EQ(1, id) << "The id returned should be one; this should be the first allocation.\n";
     block_store_release(bs, id);
     id = block_store_allocate(bs);
-    ASSERT_EQ(0, id) << "The id returned should again be zero; did your release not work?\n";
+    ASSERT_EQ(1, id) << "The id returned should again be zero; did your release not work?\n";
     block_store_destroy(bs);
 
     score += 10;
@@ -113,7 +112,7 @@ TEST(block_store_alloc_free_req, over_allocate) {
     size_t id = 100;
     for (size_t i = 0; i < BLOCK_STORE_AVAIL_BLOCKS; i++) {
         id = block_store_allocate(bs);
-        ASSERT_EQ(i, id);
+        ASSERT_EQ(i+1, id);
     }
 
     // Allocate once more. This should fail.
