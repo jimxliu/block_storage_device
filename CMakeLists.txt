@@ -18,6 +18,6 @@ target_link_libraries(block_store bitmap)
 add_executable(${PROJECT_NAME}_test test/tests.cpp)
 
 # Enable grad/bonus tests by setting the variable to 1
-target_compile_definitions(${PROJECT_NAME}_test PRIVATE GRAD_TESTS=0)
+target_compile_definitions(${PROJECT_NAME}_test PRIVATE GRAD_TESTS=1)
 
 target_link_libraries(${PROJECT_NAME}_test block_store gtest pthread)
