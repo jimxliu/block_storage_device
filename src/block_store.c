@@ -24,11 +24,11 @@ block_store_t *block_store_create(){
 	}
 	int i=0;
 	for(; i<256; ++i){
-		if(!((*bs).bmp[i] = bitmap_create(2048))){
+		if(!((*bs).bmp[i] = bitmap_create(2048))){ // Create a bitmap for every block to represent their data
 			return NULL;
 		}
 	}
-	bitmap_set((*bs).bmp[0], 0);
+	bitmap_set((*bs).bmp[0], 0); // The first block is used as Free Block Map, and always in use (always set)
 	if(bs == NULL){
 		return NULL;
 	}
@@ -142,7 +142,7 @@ size_t block_store_read(const block_store_t *const bs, const size_t block_id, vo
 	if(bs == NULL || buffer == NULL){
 		return 0;
 	}
-	memcpy(buffer,(const void *)bitmap_export((*bs).bmp[block_id]), 256);
+	memcpy(buffer,(const void *)bitmap_export((*bs).bmp[block_id]), 256); // Copy the data from the specified block to the buffer
 	
 	return 256;
 }
@@ -159,7 +159,7 @@ size_t block_store_write(block_store_t *const bs, const size_t block_id, const v
 	}
  	bitmap_destroy((*bs).bmp[block_id]); // destroy the old bitmap at block_id
 	(*bs).bmp[block_id] = NULL;
-	(*bs).bmp[block_id] = bitmap_import(2048, buffer); // re-create one bitmap using the buffer content as data
+	(*bs).bmp[block_id] = bitmap_import(2048, buffer); // re-create one bitmap for the block at block_id using the buffer content as data
 	if((*bs).bmp[block_id] == NULL){
 		return 0;
 	}
@@ -178,23 +178,25 @@ block_store_t *block_store_deserialize(const char *const filename){
 	if(fd < 0){
 		return NULL;
 	}
-	block_store_t * bs = block_store_create();
+	block_store_t * bs = block_store_create(); // Create a new BS device for storing the data given from the file
 	if(bs == NULL){
 		return NULL;
 	}
 	size_t i=0;
 	for(; i<256; ++i){
- 		uint8_t buffer[256];
-		if(read(fd, buffer, 256) < 0){
-			block_store_destroy(bs);
+ 		uint8_t buffer[256]; // Temporary buffer for transferring data from the file to the BS device
+		/* Read the data from the file to the temp buffer  */
+		if(read(fd, buffer, 256) < 0){ 
+			block_store_destroy(bs); // This happens if read() fails
 			return NULL;
 		}
-		if(block_store_write(bs, i, buffer) != 256){
+		/* Read the data from the buffer to every block */
+		if(block_store_write(bs, i, buffer) != 256){ // This happens if block_store_read() fails 
 			block_store_destroy(bs);
 			return NULL;
 		}
 	}
-	if(close(fd) != 0){
+	if(close(fd) != 0){ // This happens if closing the file fails
 		block_store_destroy(bs);
 		return NULL;
 	}
@@ -210,21 +212,21 @@ size_t block_store_serialize(const block_store_t *const bs, const char *const fi
 	if(bs == NULL || filename == NULL){
 		return 0;
 	}
-	int fd = open(filename, O_TRUNC | O_CREAT, 0666);
+	int fd = open(filename, O_TRUNC | O_CREAT, 0666); // Create a new file, or, if it exists already, clear all its data
 	if(fd < 0){
 		return 0;
 	}
 	if(close(fd) != 0){
 		return 0;
 	}	
- 	fd = open(filename, O_WRONLY | O_APPEND);
+ 	fd = open(filename, O_WRONLY | O_APPEND); // Open the file for writing/appending
 	if(fd < 0){
 		return 0;
 	}
 	int i=0;
 	size_t size = 0;
 	for(; i<256; ++i){			
-		if(write(fd, bitmap_export((*bs).bmp[i]), 256) < 0){
+		if(write(fd, bitmap_export((*bs).bmp[i]), 256) < 0){ // Write just the data of every bitmap-formatted block to the file
 			return 0;
 		} else {
 			size += 256;
@@ -233,5 +235,5 @@ size_t block_store_serialize(const block_store_t *const bs, const char *const fi
 	if(close(fd) != 0){
 		return 0;
 	}
-	return size;
+	return size; // Total size should be 2^8 (bytes) * 2^8 (blocks)
 }
